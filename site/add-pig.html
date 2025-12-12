@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Add Pig</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+  <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+  <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+        <a href="./">Dashboard</a>
+        <a href="sows.html">Sows</a>
+        <a href="boars.html">Boars</a>
+        <a href="litters.html">Litters</a>
+  <a href="feed.html">Feed</a>
+  <a href="events.html">Events</a>
+  <a href="health.html">Health</a>
+        <a href="reports.html">Reports</a>
+        <a href="add-pig.html">Add Pig</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:24px 0 60px">
+    <div class="section-title"><h2>New Pig</h2></div>
+    <form id="pigForm" class="form-card card" novalidate>
+      <div class="form-row">
+        <label for="breed">Breed (optional)</label>
+        <select id="breed" name="breed" class="input"></select>
+      </div>
+      <div class="form-row required">
+        <label for="tagNo">Tag no. *</label>
+        <input id="tagNo" name="tagNo" class="input" placeholder="Unique tag" required/>
+      </div>
+      <div class="form-row">
+        <label for="name">Name.</label>
+        <input id="name" name="name" class="input" placeholder="Name"/>
+      </div>
+      <div class="form-row">
+        <label for="litterNo">Litter No.</label>
+        <input id="litterNo" name="litterNo" class="input"/>
+      </div>
+      <div class="form-row">
+        <label for="weight">Weight (kg).</label>
+        <input id="weight" name="weight" class="input" type="number" step="0.1" min="0"/>
+      </div>
+      <div class="form-row required">
+        <label for="gender">Select Gender. *</label>
+        <select id="gender" name="gender" class="input" required>
+          <option value="">-- Select --</option>
+          <option value="Female">Female</option>
+          <option value="Male">Male</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="dob">Date of birth.</label>
+        <input id="dob" name="dob" class="input" type="date"/>
+      </div>
+      <div class="form-row">
+        <label for="entryDate">Date of entry on the farm.</label>
+        <input id="entryDate" name="entryDate" class="input" type="date"/>
+      </div>
+      <div class="form-row">
+        <label for="group">Group (optional)</label>
+        <select id="group" name="group" class="input"></select>
+      </div>
+      <div class="form-row required">
+        <label for="obtainedMethod">Select how this pig was obtained. *</label>
+        <select id="obtainedMethod" name="obtainedMethod" class="input" required></select>
+      </div>
+      <div class="form-row">
+        <label for="motherTag">Mother's tag no.</label>
+        <select id="motherTag" name="motherTag" class="input"></select>
+      </div>
+      <div class="form-row">
+        <label for="fatherTag">Father's tag no.</label>
+        <select id="fatherTag" name="fatherTag" class="input"></select>
+      </div>
+      <div class="form-row">
+        <label for="notes">Write some notes ...</label>
+        <textarea id="notes" name="notes" class="input" rows="4" placeholder="Observations, health, etc."></textarea>
+      </div>
+      <div class="form-row">
+        <label for="photo">Photo (optional)</label>
+        <input id="photo" name="photo" type="file" accept="image/*" capture="environment" class="input" />
+        <div class="small">Take a photo or choose an image file. Optional — leave empty if no photo.</div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn primary" id="saveBtn">Save</button>
+        <button type="reset" class="btn" id="resetBtn">Reset</button>
+      </div>
+      <div id="formMsg" class="form-msg" role="alert" aria-live="polite"></div>
+    </form>
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <script src="assets/supa-config.js"></script>
+  <script src="assets/supabase-client.js"></script>
+  <script src="assets/modules.js"></script>
+  <script src="assets/app.js"></script>
+  <script src="assets/pig-form.js"></script>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

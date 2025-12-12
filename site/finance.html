@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Finance</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+  <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+  <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+        <a href="./">Dashboard</a>
+        <a href="sows.html">Sows</a>
+        <a href="boars.html">Boars</a>
+        <a href="litters.html">Litters</a>
+        <a href="feed.html">Feed</a>
+        <a href="events.html">Events</a>
+        <a href="health.html">Health</a>
+        <a href="reports.html">Reports</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:22px 0 40px">
+    <div class="section-title"><h2>Profit & Loss (Dummy)</h2></div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
+      <div class="card pad"><div class="label">Revenue (month)</div><div class="value">$4,850</div></div>
+      <div class="card pad"><div class="label">Costs (month)</div><div class="value" style="color:#ef4444">$2,930</div></div>
+      <div class="card pad"><div class="label">Profit</div><div class="value" style="color:#22c55e">$1,920</div></div>
+    </div>
+    <div style="height:20px"></div>
+    <div class="charts">
+      <div class="card pad chart">Cost vs Sales trend — placeholder</div>
+      <div class="card pad chart">Category breakdown — placeholder</div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <script src="assets/app.js"></script>
+  <script>wireActiveNav(); document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

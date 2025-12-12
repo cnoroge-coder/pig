@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Gallery</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+  <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+  <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+        <a href="./">Dashboard</a>
+        <a href="sows.html">Sows</a>
+        <a href="boars.html">Boars</a>
+        <a href="litters.html">Litters</a>
+  <a href="feed.html">Feed</a>
+  <a href="events.html">Events</a>
+  <a href="health.html">Health</a>
+        <a href="reports.html">Reports</a>
+        <a href="gallery.html">Gallery</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:22px 0 40px">
+    <div class="section-title"><h2>Pig Gallery (Sample Images)</h2></div>
+    <p class="small">Copy image files into <code>/site/pigs/</code>. They will appear below automatically. (Current placeholders shown if none present.)</p>
+    <div id="gallery" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:16px"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <script src="assets/supa-config.js"></script>
+  <script src="assets/supabase-client.js"></script>
+  <script src="assets/modules.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+    function detectImages(){
+      // We cannot list files dynamically without a backend; provide known name suggestions.
+      const suggestions = [
+        'Screenshot_20251116-193135.jpg','Screenshot_20251116-193138.jpg','Screenshot_20251116-193144.jpg','Screenshot_20251116-193152.jpg'
+      ];
+      const container = document.getElementById('gallery');
+      container.innerHTML='';
+      suggestions.forEach(name => {
+        const card = document.createElement('div'); card.className='card';
+        card.style.padding='6px';
+        const img = document.createElement('img'); img.alt = name; img.loading='lazy'; img.src = `./pigs/${name}`;
+        img.onerror = ()=>{ img.replaceWith(Object.assign(document.createElement('div'),{textContent:'(placeholder)',className:'small',style:'padding:26px;text-align:center;color:#666'})); };
+        card.append(img);
+        const cap = document.createElement('div'); cap.className='small'; cap.style.padding='4px 6px'; cap.textContent = name;
+        card.append(cap);
+        container.append(card);
+      });
+    }
+    detectImages(); wireActiveNav(); document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

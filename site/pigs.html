@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Pigs</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+  <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+  <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+        <a href="./">Dashboard</a>
+        <a href="pigs.html">Pigs</a>
+        <a href="sows.html">Sows</a>
+        <a href="boars.html">Boars</a>
+        <a href="litters.html">Litters</a>
+  <a href="feed.html">Feed</a>
+  <a href="events.html">Events</a>
+  <a href="health.html">Health</a>
+        <a href="reports.html">Reports</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:22px 0 40px">
+    <div class="section-title">
+      <h2>All Pigs</h2>
+      <a class="btn" href="add-pig.html">＋ Add Pig</a>
+    </div>
+
+    <section class="grid tiles" id="totals" style="margin-bottom:18px"></section>
+
+    <div class="section-title"><h2>Animals</h2></div>
+    <div id="pigList" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <script src="assets/supa-config.js"></script>
+  <script src="assets/supabase-client.js"></script>
+  <script src="assets/modules.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const { AnimalsModule } = window.Modules;
+    const totals = document.getElementById('totals');
+    const totalPigs = AnimalsModule.sows.length + AnimalsModule.boars.length + (AnimalsModule.piglets||0);
+    const totalPiglets = AnimalsModule.piglets||0;
+    const sowCount = AnimalsModule.sows.length;
+    const boarCount = AnimalsModule.boars.length;
+    totals.innerHTML = '';
+    [
+      {label:'Total pigs', value:totalPigs},
+      {label:'Total piglets', value:totalPiglets},
+      {label:'Total sows', value:sowCount},
+      {label:'Total boars', value:boarCount}
+    ].forEach(m=>{
+      const c=document.createElement('div'); c.className='card pad tile';
+      c.innerHTML = `<div class="label">${m.label}</div><div class="value">${m.value}</div>`;
+      totals.append(c);
+    });
+
+    // Pigs hub: show quick links to Sows and Boars pages rather than listing all animals here
+    const root = document.getElementById('pigList'); root.innerHTML='';
+    const sowsCard = document.createElement('a');
+    sowsCard.href = 'sows.html'; sowsCard.className = 'card pad';
+    sowsCard.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-weight:700">View Sows</div>
+        <div class="small">See all female breeders on the farm</div>
+        <div style="height:8px"></div>
+        <div class="badge ok">Total: ${AnimalsModule.sows.length}</div>
+      </div>
+    `;
+
+    const boarsCard = document.createElement('a');
+    boarsCard.href = 'boars.html'; boarsCard.className = 'card pad';
+    boarsCard.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-weight:700">View Boars</div>
+        <div class="small">See all male breeders on the farm</div>
+        <div style="height:8px"></div>
+        <div class="badge">Total: ${AnimalsModule.boars.length}</div>
+      </div>
+    `;
+
+    // Optionally show a small list of recent piglets and quick work cards for events/pregnancies
+    const pigletsPreview = document.createElement('div'); pigletsPreview.className='card pad';
+    pigletsPreview.innerHTML = `
+      <div style="font-weight:700">Recent Piglets</div>
+      <div class="small">Showing latest from litters</div>
+      <div style="height:8px"></div>
+      <div class="small">Count: ${AnimalsModule.piglets}</div>
+    `;
+
+    const eventsCount = (window.Modules.EventsModule && window.Modules.EventsModule.events) ? window.Modules.EventsModule.events.length : 0;
+    const eventsCard = document.createElement('a'); eventsCard.href = 'events.html'; eventsCard.className='card pad';
+    eventsCard.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="font-weight:700">Events</div>
+        <div class="small">Upcoming & recent events</div>
+        <div style="height:8px"></div>
+        <div class="badge">Total: ${eventsCount}</div>
+      </div>
+    `;
+
+
+    // layout: grid of quick links (Sows, Boars, Events, Pregnancies, Piglets preview)
+    const linksWrap = document.createElement('div'); linksWrap.style.display='grid'; linksWrap.style.gridTemplateColumns='repeat(auto-fit,minmax(220px,1fr))'; linksWrap.style.gap='14px';
+  linksWrap.append(sowsCard, boarsCard, eventsCard, pigletsPreview);
+    root.append(linksWrap);
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+    wireActiveNav();
+  });
+  </script>
+</body>
+</html>

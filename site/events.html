@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Events</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+      <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+      <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+        <a href="./">Dashboard</a>
+        <a href="pigs.html">Pigs</a>
+        <a href="sows.html">Sows</a>
+        <a href="boars.html">Boars</a>
+        <a href="litters.html">Litters</a>
+        <a href="feed.html">Feed</a>
+        <a href="events.html">Events</a>
+        <a href="health.html">Health</a>
+        <a href="reports.html">Reports</a>
+        <a href="add-pig.html">Add Pig</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:22px 0 40px">
+    <div class="section-title" style="align-items:center">
+      <h2 id="eventsTitle">Upcoming Events</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="addEvent" class="btn">＋ Add Event</button>
+      </div>
+    </div>
+    <div id="eventsControls" style="margin-top:8px"></div>
+    <div id="eventsGrid" class="list"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <script src="assets/supa-config.js"></script>
+  <script src="assets/supabase-client.js"></script>
+  <script src="assets/modules.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+  function param(name){ const p = new URLSearchParams(location.search); return p.get(name); }
+  function renderEvents(){
+    const root = document.getElementById('eventsGrid'); root.innerHTML='';
+    const evs = window.Modules.EventsModule.events || [];
+    const today = new Date().setHours(0,0,0,0);
+    const tag = param('tag');
+    const showAll = param('all');
+    if(showAll){
+      // show all events (past + upcoming) for tag or all, newest first
+      const list = evs.filter(e=> !tag || e.tag===tag).sort((a,b)=> new Date(b.date)-new Date(a.date));
+      if(list.length===0){ root.innerHTML='<div class="small">No events found</div>'; return; }
+      list.forEach(e=>{
+        const it = document.createElement('div'); it.className='card pad';
+        it.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:700">${e.type}</div>
+            <div class="small">${e.date}</div>
+          </div>
+          <div style="height:8px"></div>
+          <div class="small">Tag:</div><div>${e.tag||'-'}</div>
+          <div class="small">Notes:</div><div>${e.notes||''}</div>
+        `;
+        root.append(it);
+      });
+      return;
+    }
+    const upcoming = evs.filter(e=> new Date(e.date).setHours(0,0,0,0) >= today && (!tag || e.tag===tag)).sort((a,b)=> new Date(a.date)-new Date(b.date));
+    if(upcoming.length===0){ root.innerHTML='<div class="small">No upcoming events</div>'; return; }
+    upcoming.forEach(e=>{
+      const it = document.createElement('div'); it.className='card pad';
+      it.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700">${e.type}</div>
+          <div class="small">${e.date}</div>
+        </div>
+        <div style="height:8px"></div>
+        <div class="small">Tag:</div><div>${e.tag||'-'}</div>
+        <div class="small">Notes:</div><div>${e.notes||''}</div>
+      `;
+      root.append(it);
+    });
+  }
+
+  function showAddForm(prefillTag){
+    const cont = document.getElementById('eventsControls'); cont.innerHTML='';
+    const wrap = document.createElement('div'); wrap.className='card pad';
+    wrap.innerHTML = `
+      <div style="display:grid;gap:8px">
+        <input id="ev_type" class="input" placeholder="Event type (e.g. Vaccination)" />
+        <input id="ev_date" type="date" class="input" />
+        <input id="ev_tag" class="input" placeholder="Tag (optional)" />
+        <textarea id="ev_notes" class="input" rows="3" placeholder="Notes"></textarea>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button id="ev_cancel" class="btn">Cancel</button>
+          <button id="ev_save" class="btn primary">Save</button>
+        </div>
+      </div>
+    `;
+    cont.append(wrap);
+    if(prefillTag) document.getElementById('ev_tag').value = prefillTag;
+    document.getElementById('ev_cancel').addEventListener('click', ()=>{ cont.innerHTML=''; });
+    document.getElementById('ev_save').addEventListener('click', ()=>{
+      const ev = { type: document.getElementById('ev_type').value.trim() || 'Event', date: document.getElementById('ev_date').value || new Date().toISOString().slice(0,10), tag: document.getElementById('ev_tag').value.trim() || '', notes: document.getElementById('ev_notes').value.trim() };
+      window.Modules.EventsModule.addEvent(ev);
+      cont.innerHTML=''; renderEvents();
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const tag = param('tag');
+    const title = document.getElementById('eventsTitle');
+    const showAll = param('all');
+    if(tag){ title.textContent = showAll? 'Events (all) for '+tag : 'Upcoming Events for '+tag; }
+    renderEvents(); document.getElementById('year').textContent = new Date().getFullYear(); wireActiveNav && wireActiveNav();
+    const btn = document.getElementById('addEvent'); btn && btn.addEventListener('click', ()=>{ const tag = param('tag'); showAddForm(tag||''); });
+  });
+  </script>
+</body>
+</html>

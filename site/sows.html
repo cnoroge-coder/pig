@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Sows</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+  <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+  <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+        <a href="./">Dashboard</a>
+        <a href="pigs.html">Pigs</a>
+        <a href="sows.html">Sows</a>
+        <a href="boars.html">Boars</a>
+        <a href="litters.html">Litters</a>
+  <a href="feed.html">Feed</a>
+  <a href="events.html">Events</a>
+  <a href="health.html">Health</a>
+        <a href="reports.html">Reports</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:22px 0 40px">
+      <div class="section-title">
+        <h2>Sows</h2>
+        <a class="btn" href="add-pig.html">Add Pig</a>
+      </div>
+    <div class="grid" style="grid-template-columns:repeat(1,minmax(0,1fr))">
+      <div class="small" style="color:#a1a1aa">Showing dummy data</div>
+    </div>
+
+    <div id="sowGrid" class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));margin-top:14px"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <script src="assets/supa-config.js"></script>
+  <script src="assets/supabase-client.js"></script>
+  <script src="assets/modules.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+  function renderSows(){
+    const root = document.getElementById('sowGrid');
+    root.innerHTML='';
+    const mod = window.Modules.AnimalsModule;
+    mod.sows.forEach(s=>{
+      const card = document.createElement('a'); card.className='card pad sow-card'; card.href = 'pig.html?tag='+encodeURIComponent(s.tagNo);
+      card.innerHTML = `
+        <div style="display:flex;gap:12px;align-items:center">
+          <img src="${s.imageUrl || s.image || s.image_url || '/pics/Pig.jpeg'}" alt="pig" style="width:56px;height:56px;border-radius:8px;object-fit:cover" />
+          <div>
+            <div style="font-weight:700">${s.name}</div>
+            <div class="small">${s.breed}</div>
+          </div>
+        </div>
+        <div style="height:10px"></div>
+        <div class="small">DOB: ${s.dob}</div>
+        <div class="small">Expected farrow: <span style="color:var(--brand-600)">${s.expectedFarrow}</span></div>
+        <div style="height:10px"></div>
+        <div class="progress"><div class="bar" style="width:${Math.floor(Math.random()*60+20)}%"></div></div>
+        <div style="height:8px"></div>
+        <div class="small" id="sow_upcoming_${s.tagNo}"></div>
+        <div class="small" id="sow_preg_${s.tagNo}" style="margin-top:6px;color:var(--muted)"></div>
+        <div style="height:8px"></div>
+      `;
+      root.append(card);
+    });
+    // populate upcoming events and pregnancies per sow
+    setTimeout(()=>{
+      const today = new Date(); today.setHours(0,0,0,0);
+      mod.sows.forEach(s=>{
+        const evs = (window.Modules.EventsModule.getFor(s.tagNo)||[]).filter(e=> new Date(e.date).setHours(0,0,0,0) >= today);
+        const next = evs.sort((a,b)=> new Date(a.date)-new Date(b.date))[0];
+        const evEl = document.getElementById('sow_upcoming_'+s.tagNo);
+        if(next) evEl.innerHTML = `<strong>Upcoming:</strong> ${next.type} • <span class="small">${next.date}</span>`; else evEl.innerHTML = `<span class="small">No upcoming events</span>`;
+
+        const pregAll = window.Modules.AnimalsModule.getBreedingFor(s.tagNo) || [];
+        const upcomingPreg = pregAll.filter(p=> p.expectedFarrowing && new Date(p.expectedFarrowing).setHours(0,0,0,0) >= today).sort((a,b)=> new Date(a.expectedFarrowing)-new Date(b.expectedFarrowing))[0];
+        const pregEl = document.getElementById('sow_preg_'+s.tagNo);
+        if(upcomingPreg) pregEl.innerHTML = `<strong>Upcoming farrow:</strong> ${upcomingPreg.expectedFarrowing} • <span class="small">${upcomingPreg.remarks||''}</span>`; else pregEl.innerHTML = `<span class="small">No upcoming pregnancies</span>`;
+      });
+    },60);
+  }
+  renderSows(); wireActiveNav(); document.getElementById('year').textContent = new Date().getFullYear();
+
+// Pregnancies panel helpers (inline per-sow behaviour similar to events)
+function renderSowPregPanel(tag){
+  const panel = document.getElementById('sow_preg_panel_'+tag);
+  if(!panel) return;
+  panel.innerHTML = '';
+  const rows = window.Modules.AnimalsModule.getBreedingFor(tag) || [];
+  if(rows.length===0){ panel.innerHTML = '<div class="small">No pregnancies recorded</div>'; return; }
+  rows.slice().reverse().forEach(r=>{
+    const it = document.createElement('div'); it.className='card pad';
+    it.innerHTML = `
+      <div style="font-weight:700">Pregnancy</div>
+      <div class="small">Date Served:</div><div>${r.dateServed||''}</div>
+      <div class="small">Boar Used:</div><div>${r.boarUsed||''}</div>
+      <div class="small">Expected Farrowing:</div><div>${r.expectedFarrowing||''}</div>
+      <div class="small">Actual Farrowing:</div><div>${r.actualFarrowing||''}</div>
+      <div class="small">Number Born:</div><div>${r.numberBorn||''}</div>
+      <div class="small">Alive:</div><div>${r.alive||''}</div>
+      <div class="small">Dead:</div><div>${r.dead||''}</div>
+      <div style="height:6px"></div>
+      <div class="small">Remarks:</div><div>${r.remarks||''}</div>
+    `;
+    panel.appendChild(it);
+  });
+}
+
+function toggleSowPregPanel(tag){
+  const panel = document.getElementById('sow_preg_panel_'+tag);
+  if(!panel) return;
+  if(panel.style.display==='block'){ panel.style.display='none'; return; }
+  // show and render
+  renderSowPregPanel(tag);
+  // append an add button at top
+  const addWrap = document.createElement('div'); addWrap.className='card pad'; addWrap.style.marginBottom='8px';
+  addWrap.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:700">Pregnancies</div>
+      <div><button class="btn" id="addPreg_${tag}">＋ Add pregnancy</button></div>
+    </div>
+  `;
+  panel.insertBefore(addWrap, panel.firstChild);
+  panel.style.display='block';
+  document.getElementById('addPreg_'+tag).addEventListener('click', ()=> showAddPregFormForSow(tag, panel));
+}
+
+function showAddPregFormForSow(tag, panel){
+  if(document.getElementById('sow_ip_form_'+tag)) return; // already shown
+  const wrap = document.createElement('div'); wrap.id='sow_ip_form_'+tag; wrap.className='card pad';
+  wrap.innerHTML = `
+    <div style="display:grid;gap:8px">
+      <input id="ip_dateServed_${tag}" class="input" type="date" />
+      <input id="ip_boarUsed_${tag}" class="input" placeholder="Boar tag/code" />
+      <input id="ip_expected_${tag}" class="input" type="date" placeholder="Expected farrowing" />
+      <input id="ip_actual_${tag}" class="input" type="date" placeholder="Actual farrowing" />
+      <input id="ip_numberBorn_${tag}" class="input" type="number" placeholder="Number born" />
+      <input id="ip_alive_${tag}" class="input" type="number" placeholder="Alive" />
+      <input id="ip_dead_${tag}" class="input" type="number" placeholder="Dead" />
+      <textarea id="ip_remarks_${tag}" class="input" rows="3" placeholder="Remarks"></textarea>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button id="ip_cancel_${tag}" class="btn">Cancel</button>
+        <button id="ip_save_${tag}" class="btn primary">Save</button>
+      </div>
+    </div>
+  `;
+  panel.insertBefore(wrap, panel.firstChild.nextSibling);
+  document.getElementById('ip_cancel_'+tag).addEventListener('click', ()=>{ wrap.remove(); });
+  document.getElementById('ip_save_'+tag).addEventListener('click', ()=>{
+    const rec = {
+      sowTag: tag,
+      sowName: (window.Modules.AnimalsModule.getSow(tag)||{}).name||'',
+      dateServed: document.getElementById('ip_dateServed_'+tag).value,
+      boarUsed: document.getElementById('ip_boarUsed_'+tag).value,
+      expectedFarrowing: document.getElementById('ip_expected_'+tag).value,
+      actualFarrowing: document.getElementById('ip_actual_'+tag).value,
+      numberBorn: document.getElementById('ip_numberBorn_'+tag).value,
+      alive: document.getElementById('ip_alive_'+tag).value,
+      dead: document.getElementById('ip_dead_'+tag).value,
+      remarks: document.getElementById('ip_remarks_'+tag).value
+    };
+    window.Modules.AnimalsModule.addBreedingRecord(rec);
+    wrap.remove(); renderSowPregPanel(tag);
+  });
+}
+
+// wire sow pregnancies buttons after render
+document.addEventListener('DOMContentLoaded', ()=>{
+  // per-sow pregnancy toggles removed from list view; detailed sow page has full controls
+});
+  </script>
+</body>
+</html>

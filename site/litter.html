@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<title>Pig Farm — Litter</title>
+	<link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+	<header class="header">
+		<div class="container nav">
+			<button class="back-btn" aria-label="Back" id="backBtn">←</button>
+			<div class="brand"><span class="dot"></span> Pig Farm</div>
+			<button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+			<nav class="nav-links">
+				<a href="./">Dashboard</a>
+				<a href="pigs.html">Pigs</a>
+				<a href="sows.html">Sows</a>
+				<a href="boars.html">Boars</a>
+				<a href="litters.html">Litters</a>
+				<a href="feed.html">Feed</a>
+				<a href="events.html">Events</a>
+				<a href="health.html">Health</a>
+				<a href="reports.html">Reports</a>
+			</nav>
+		</div>
+	</header>
+
+	<main class="container" style="padding:18px 0 60px">
+		<div class="section-title" style="align-items:center">
+			<h2>Litter</h2>
+			<div style="display:flex;gap:8px;align-items:center">
+				<button id="tabDetails" class="btn">Details</button>
+				<button id="tabEvents" class="btn">Events</button>
+			</div>
+		</div>
+
+		<div id="detailsPane">
+			<div class="card pad" id="detailsCard">
+				<div id="detailContent"></div>
+			</div>
+		</div>
+
+		<div id="eventsPane" style="display:none">
+			<div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0">
+				<h3 style="margin:0">Events</h3>
+				<button id="litterAddEventBtn_top" class="btn">＋ Add event</button>
+			</div>
+			<div id="eventsList" class="list"></div>
+		</div>
+	</main>
+
+	<footer class="footer">
+		<div class="container small">© <span id="year"></span> Pig Farm Management</div>
+	</footer>
+
+	<script src="assets/supa-config.js"></script>
+	<script src="assets/supabase-client.js"></script>
+	<script src="assets/modules.js"></script>
+	<script src="assets/app.js"></script>
+	<script>
+	function daysBetween(dateStr){ if(!dateStr) return null; const d=new Date(dateStr); const now=new Date(); return Math.floor((now - d)/(1000*60*60*24)); }
+	function ageLabelFromDays(days){ if(days==null) return '-'; if(days<30) return days + ' days'; const months = Math.floor(days/30); return months + (months===1? ' month':' months'); }
+
+	function renderPigletRow(p){
+		const dob = p.dob || '';
+		const ageDays = dob? daysBetween(dob) : null;
+		return `
+			<div class="tr">
+				<div>${p.tagNo || '-'}</div>
+				<div>${dob || ''}</div>
+				<div>${ageLabelFromDays(ageDays)}</div>
+				<div>${p.number || '-'}</div>
+				<div>${p.weight || (p.avgWeight || '-')}</div>
+				<div>${p.feedType || p.feedIntroduced || '-'}</div>
+				<div>${p.healthNotes || p.treatments || '-'}</div>
+				<div>${p.remarks || '-'}</div>
+			</div>
+		`;
+	}
+
+
+// helper to render and wire events area for a litter
+function setupLitterEvents(litter){
+    const list = document.getElementById('eventsList') || document.getElementById('litterEventsList');
+    if(!list) return;
+	const today = new Date(); today.setHours(0,0,0,0);
+	function render(){
+		list.innerHTML = '';
+		const evs = (window.Modules.EventsModule.getFor(litter.id) || []).sort((a,b)=> new Date(a.date)-new Date(b.date));
+		const upcoming = evs.filter(e=> new Date(e.date).setHours(0,0,0,0) >= today);
+		if(upcoming.length===0) list.innerHTML = '<div class="small">No upcoming events for this litter</div>';
+		upcoming.forEach(e=>{
+			const it = document.createElement('div'); it.className='card pad';
+			it.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:700">${e.type}</div><div class="small">${e.date}</div></div><div style="height:8px"></div><div class="small">Notes:</div><div>${e.notes||''}</div>`;
+			list.appendChild(it);
+		});
+	}
+	render();
+	const addBtn = document.getElementById('litterAddEventBtn') || document.getElementById('litterAddEventBtn_top');
+	if(addBtn){
+		addBtn.addEventListener('click', ()=>{
+			// show inline form above list
+			if(document.getElementById('litterEventForm')){ document.getElementById('litterEventForm').remove(); addBtn.textContent='＋ Add Event'; return; }
+			const wrap = document.createElement('div'); wrap.id='litterEventForm'; wrap.className='card pad';
+			wrap.innerHTML = `
+				<div style="display:grid;gap:8px">
+					<input id="le_type" class="input" placeholder="Event type (e.g. Checkup)" />
+					<input id="le_date" type="date" class="input" />
+					<textarea id="le_notes" class="input" rows="3" placeholder="Notes"></textarea>
+					<div style="display:flex;gap:8px;justify-content:flex-end">
+						<button id="le_cancel" class="btn">Cancel</button>
+						<button id="le_save" class="btn primary">Save</button>
+					</div>
+				</div>
+			`;
+			list.parentNode.insertBefore(wrap, list);
+			addBtn.textContent='− Cancel';
+			document.getElementById('le_cancel').addEventListener('click', ()=>{ wrap.remove(); addBtn.textContent='＋ Add Event'; });
+			document.getElementById('le_save').addEventListener('click', ()=>{
+				const ev = { type: document.getElementById('le_type').value.trim() || 'Event', date: document.getElementById('le_date').value || new Date().toISOString().slice(0,10), tag: litter.id, notes: document.getElementById('le_notes').value.trim() };
+				window.Modules.EventsModule.addEvent(ev);
+				wrap.remove(); addBtn.textContent='＋ Add Event'; render();
+			});
+		});
+	}
+}
+
+	function renderLitter(){
+		const params = new URLSearchParams(window.location.search);
+		const id = params.get('id');
+		const mod = window.Modules && window.Modules.AnimalsModule;
+				document.getElementById('year').textContent = new Date().getFullYear();
+	if(!mod){ document.getElementById('detailsCard').innerHTML = '<div class="card small">Data module not loaded</div>'; return; }
+	if(!id){ document.getElementById('detailsCard').innerHTML = '<div class="card small">No litter id provided</div>'; return; }
+		const litter = (mod.litters||[]).find(x=> x.id === id);
+	if(!litter){ document.getElementById('detailsCard').innerHTML = '<div class="card small">Litter not found</div>'; return; }
+
+		const sow = mod.getSow ? mod.getSow(litter.sowTag) : null;
+		const live = (litter.piglets||[]).length;
+		const dead = litter.dead || 0;
+		const status = litter.status || 'Nursing';
+
+			// compute litter age (days) and week label before rendering header
+			const ageDays = daysBetween(litter.bornDate);
+			const weeks = (ageDays!=null) ? Math.floor(ageDays/7) : '-';
+			const isOlder4m = (ageDays!=null) ? ageDays >= 120 : false;
+			const is3w = (ageDays!=null) ? ageDays <= 21 : false;
+			// collective litter summary card (one card for the litter)
+			const liveCount = (litter.piglets||[]).length;
+			const healthNotes = litter.healthNotes || (litter.piglets||[]).map(p=>p.healthNotes).filter(Boolean).join('; ') || '-';
+			const remarks = litter.remarks || '-';
+
+			// render detail content into the main details pane (match pig.html/boar layout)
+			detailContent.innerHTML = `
+			  <div style="display:grid;grid-template-columns:84px 1fr 1fr;gap:12px;align-items:start">
+			    <div>
+			      <img src="/pics/Pig.jpeg" alt="logo" style="width:76px;height:76px;object-fit:cover;border-radius:8px;margin-bottom:8px" />
+			    </div>
+			    <div>
+			      <div class="small">Sow</div>
+			      <div style="font-weight:700">${(sow&&sow.name)||litter.sowTag}</div>
+			      <div class="small" style="color:var(--muted);">Litter ID: ${litter.id}</div>
+			      <div style="height:8px"></div>
+			      <div class="small">Born</div>
+			      <div>${litter.bornDate||''}</div>
+			      <div class="small">Age</div>
+			      <div>${weeks} weeks</div>
+			    </div>
+			    <div>
+			      <div class="small">Live born</div>
+			      <div style="font-weight:700">${live}</div>
+			      <div style="height:8px"></div>
+			      <div class="small">Dead</div>
+			      <div>${dead}</div>
+			      <div style="height:8px"></div>
+			      <div class="small">Status</div>
+			      <div><span class="badge">${status}</span></div>
+			    </div>
+			  </div>
+
+			  <div style="height:12px"></div>
+			  <div class="small">Number in litter</div><div style="font-weight:700">${(litter.piglets||[]).length}</div>
+			  <div style="height:8px"></div>
+			  <div class="small">Health notes</div>
+			  <div>${healthNotes}</div>
+			  <div class="small">Remarks</div>
+			  <div>${remarks}</div>
+			`;
+
+
+			// If litter is neither very young nor older-than-4-months, show neutral message and switch to events pane
+			if(!isOlder4m && !is3w){
+				// populate details pane with a short neutral card
+				document.getElementById('detailContent').innerHTML = '<div class="card small">This litter is '+(ageDays!=null? ageLabelFromDays(ageDays) : 'of unknown age')+'.</div>';
+				// prepare events pane and show events tab by default
+				setupLitterEvents(litter);
+				document.getElementById('tabDetails').classList.remove('active');
+				document.getElementById('tabEvents').classList.add('active');
+				document.getElementById('detailsPane').style.display='none';
+				document.getElementById('eventsPane').style.display='block';
+				return;
+			}
+
+			// render main summary card into details card
+			const detailsCard = document.getElementById('detailsCard');
+			const summaryWrap = document.createElement('div');
+			summaryWrap.className = 'grid';
+			summaryWrap.style.cssText = 'grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:12px;margin-top:12px';
+			summaryWrap.innerHTML = `
+				<div class="card pad">
+					<div style="font-weight:700">${(sow&&sow.name)||litter.sowTag} — Litter ${litter.id}</div>
+					<div class="small">Date of birth</div>
+					<div>${litter.bornDate || '-'}</div>
+					<div style="height:8px"></div>
+					<div class="small">Current age (weeks)</div>
+					<div>${weeks}</div>
+					<div class="small">Number</div>
+					<div>${liveCount}</div>
+					<div style="height:8px"></div>
+					<div class="small">Health notes</div>
+					<div>${healthNotes}</div>
+					<div class="small">Remarks</div>
+					<div>${remarks}</div>
+					${ isOlder4m ? `
+						<div style="height:8px"></div>
+						<div class="small">Feed type</div>
+						<div>${litter.feedType || litter.status || '-'}</div>
+					` : `
+						<div style="height:8px"></div>
+						<div class="small">Feed introduced</div>
+						<div>${litter.feedIntroduced || '-'}</div>
+						<div class="small">Deworming / Iron given</div>
+						<div>${litter.treatments || '-'}</div>
+					` }
+				</div>
+			`;
+			detailsCard.appendChild(summaryWrap);
+
+			// ensure details tab is visible and events pane hidden
+			document.getElementById('detailsPane').style.display='block';
+			document.getElementById('eventsPane').style.display='none';
+			document.getElementById('tabDetails').classList.add('active');
+			document.getElementById('tabEvents').classList.remove('active');
+
+			// wire up events pane for this litter
+			setupLitterEvents(litter);
+			// wire tab buttons to toggle panes
+			const tabDetailsBtn = document.getElementById('tabDetails');
+			const tabEventsBtn = document.getElementById('tabEvents');
+			if(tabDetailsBtn && tabEventsBtn){
+				tabDetailsBtn.addEventListener('click', ()=>{
+					document.getElementById('detailsPane').style.display='block';
+					document.getElementById('eventsPane').style.display='none';
+					tabDetailsBtn.classList.add('active');
+					tabEventsBtn.classList.remove('active');
+				});
+				tabEventsBtn.addEventListener('click', ()=>{
+					document.getElementById('detailsPane').style.display='none';
+					document.getElementById('eventsPane').style.display='block';
+					tabEventsBtn.classList.add('active');
+					tabDetailsBtn.classList.remove('active');
+				});
+			}
+	}
+
+	document.addEventListener('DOMContentLoaded', ()=>{ renderLitter(); wireActiveNav && wireActiveNav(); });
+	</script>
+</body>
+</html>
+

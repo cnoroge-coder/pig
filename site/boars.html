@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Boars</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+  <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+  <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+        <a href="./">Dashboard</a>
+        <a href="pigs.html">Pigs</a>
+        <a href="sows.html">Sows</a>
+        <a href="boars.html">Boars</a>
+        <a href="litters.html">Litters</a>
+  <a href="feed.html">Feed</a>
+  <a href="events.html">Events</a>
+  <a href="health.html">Health</a>
+        <a href="reports.html">Reports</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:22px 0 40px">
+    <div class="section-title">
+      <h2>Boars</h2>
+      <a class="btn" href="add-pig.html">Add Pig</a>
+    </div>
+
+    <div id="boarList" class="list"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <script src="assets/supa-config.js"></script>
+  <script src="assets/supabase-client.js"></script>
+  <script src="assets/modules.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+  function renderBoars(){
+    const root = document.getElementById('boarList'); root.innerHTML='';
+    const mod = window.Modules.AnimalsModule;
+    mod.boars.forEach(b=>{
+      const it=document.createElement('a'); it.className='item boar-item'; it.href='pig.html?tag='+encodeURIComponent(b.tagNo); it.setAttribute('data-tag', b.tagNo);
+      it.innerHTML = `
+  <img src="${b.imageUrl || b.image || b.image_url || '/pics/Pig.jpeg'}" alt="pig" style="width:56px;height:56px;border-radius:8px;object-fit:cover;margin-right:12px" />
+        <div style="flex:1">
+          <div style="font-weight:700">${b.name} <span class="small" style="margin-left:6px;color:#bbb">(${b.breed})</span></div>
+          <div class="small">Use count: <strong>${b.uses}</strong> • Fertility: <strong>${Math.round(b.fertility*100)}%</strong></div>
+          <div class="small" id="boar_upcoming_${b.tagNo}" style="margin-top:6px"></div>
+        </div>
+        <span class="badge ${b.fertility>0.75?'ok':b.fertility>0.6?'warn':'danger'}">Fertility</span>
+      `;
+      root.append(it);
+    })
+    // populate upcoming events for boars
+    setTimeout(()=>{
+      const today = new Date(); today.setHours(0,0,0,0);
+      mod.boars.forEach(b=>{
+        const evs = (window.Modules.EventsModule.getFor(b.tagNo)||[]).filter(e=> new Date(e.date).setHours(0,0,0,0) >= today).sort((a,b2)=> new Date(a.date)-new Date(b2.date));
+        const next = evs[0];
+        const el = document.getElementById('boar_upcoming_'+b.tagNo);
+        if(next) el.innerHTML = `<strong>Upcoming:</strong> ${next.type} • <span class="small">${next.date}</span>`; else el.innerHTML = `<span class="small">No upcoming events</span>`;
+      });
+    },60);
+  }
+  renderBoars(); wireActiveNav(); document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

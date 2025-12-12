@@ -1,0 +1,138 @@
+--- DUMMY DATA EXPORT (for fallback) ---
+
+/*
+This file contains the dummy/sample data that was previously embedded in
+`site/assets/modules.js`. It's kept as a fallback so the live site code
+doesn't include mock data.
+
+Sections included:
+- litters
+- breedingRecords
+- piglets4m, piglets3w
+- sows, boars
+- FeedModule.inventory
+- FinanceModule.categories
+- HealthModule.schedules/outbreaks
+- InventoryModule.stock
+- NotificationsModule.alerts
+- EventsModule.events
+
+You can paste these back into modules.js for offline testing, or use them to
+seed your Supabase instance.
+
+-- litters
+[
+  {
+    id: 'litter1', sowTag: 'sow1', bornDate: '2024-12-01', piglets: [
+      { tagNo: 'p001', gender: 'Female', weight: 2.3 },
+      { tagNo: 'p002', gender: 'Male', weight: 2.1 },
+      { tagNo: 'p003', gender: 'Female', weight: 2.4 }
+    ]
+  },
+  {
+    id: 'litter2', sowTag: 'sow2', bornDate: '2025-02-14', piglets: [
+      { tagNo: 'p004', gender: 'Female', weight: 1.9 },
+      { tagNo: 'p005', gender: 'Male', weight: 2.0 }
+    ]
+  },
+  {
+    id: 'litter_sow1_4m', sowTag: 'sow1', bornDate: '2025-07-26', status: 'Grower', piglets: [
+      { tagNo: 'p100', gender: 'Female', weight: 22.5 },
+      { tagNo: 'p101', gender: 'Male', weight: 23.1 },
+      { tagNo: 'p102', gender: 'Female', weight: 21.8 }
+    ]
+  },
+  {
+    id: 'litter_sow2_3w', sowTag: 'sow2', bornDate: '2025-11-05', status: 'Nursing', piglets: [
+      { tagNo: 'p200', gender: 'Female', weight: 2.4 },
+      { tagNo: 'p201', gender: 'Male', weight: 2.1 },
+      { tagNo: 'p202', gender: 'Female', weight: 2.3 }
+    ]
+  }
+]
+
+-- breedingRecords
+[
+  { sowTag:'sow1', sowName: 'Lucy', dateServed: '2024-09-10', boarUsed: 'boar1', expectedFarrowing: '2025-01-03', actualFarrowing: '', numberBorn: '', alive: '', dead: '', remarks: 'Monitor' },
+  { sowTag:'sow3', sowName: 'Molly', dateServed: '2024-10-01', boarUsed: 'boar2', expectedFarrowing: '2025-01-24', actualFarrowing: '2025-01-24', numberBorn: 10, alive:9, dead:1, remarks: 'Normal' },
+  { sowTag:'sow1', sowName:'Lucy', dateServed: '2025-09-01', boarUsed:'boar1', expectedFarrowing: '2026-01-24', actualFarrowing:'', numberBorn:'', alive:'', dead:'', remarks:'New service - monitor'},
+  { sowTag:'sow2', sowName:'Bella', dateServed: '2025-11-15', boarUsed:'boar2', expectedFarrowing: '2026-03-10', actualFarrowing:'', numberBorn:'', alive:'', dead:'', remarks:'Recently served'}
+]
+
+-- piglets4m
+[
+  { sowName: 'Bella', dob: '2024-07-10', currentAge: '4 months', number: 8, avgWeight: 24, feedType: 'Grower', healthNotes: 'Good', remarks: '' },
+  { sowName: 'Lucy', dob: '2024-06-20', currentAge: '4.5 months', number: 6, avgWeight: 26, feedType: 'Grower', healthNotes: 'Vet check done', remarks: 'Ready for sale soon' }
+]
+
+-- piglets3w
+[
+  { sowName: 'Roxy', dob: '2025-10-30', currentAge: '3 weeks', number: 9, condition: 'Good', feedIntroduced: 'Creeping feed', treatments: 'Iron given', remarks: '' },
+  { sowName: 'Daisy', dob: '2025-10-25', currentAge: '3.5 weeks', number: 7, condition: 'Slight scours', feedIntroduced: 'Milk only', treatments: 'Dewormed', remarks: 'Monitor closely' }
+]
+
+-- sows
+[
+  { id: 'sow1', tagNo:'sow1', name: 'Lucy', breed: 'Large White', dob: '2023-04-10', expectedFarrow: '2025-01-12', weightHistory: [180,182,185], status: 'Expecting', group:'Group A' },
+  { id: 'sow2', tagNo:'sow2', name: 'Bella', breed: 'Duroc', dob: '2022-12-05', expectedFarrow: '2024-12-28', weightHistory: [210,211,214], status: 'Nursing', group:'Group B' },
+  { id: 'sow3', tagNo:'sow3', name: 'Molly', breed: 'Landrace', dob: '2023-02-18', expectedFarrow: '2025-02-02', weightHistory: [175,176,179], status: 'Expecting', group:'Group A' },
+  { id: 'sow4', tagNo:'sow4', name: 'Daisy', breed: 'Yorkshire', dob: '2021-08-05', expectedFarrow: '', weightHistory: [190,192], status: 'Open', group:'Group C' },
+  { id: 'sow5', tagNo:'sow5', name: 'Roxy', breed: 'Hampshire', dob: '2020-11-02', expectedFarrow: '', weightHistory: [200,202], status: 'Gilt', group:'Group C' }
+]
+
+-- boars
+[
+  { id: 'boar1', tagNo:'boar1', name: 'Thor', breed: 'Pietrain', uses: 22, fertility: 0.78, group:'Breeder' },
+  { id: 'boar2', tagNo:'boar2', name: 'Max', breed: 'Duroc', uses: 15, fertility: 0.73, group:'Breeder' },
+  { id: 'boar3', tagNo:'boar3', name: 'Ajax', breed: 'Large White', uses: 9, fertility: 0.69, group:'Replacement' }
+]
+
+-- FeedModule.inventory
+[
+  { type: 'Starter', costPerBag: 18, percent: 35, status: 'Low' },
+  { type: 'Grower', costPerBag: 22, percent: 65, status: 'OK' },
+  { type: 'Finisher', costPerBag: 24, percent: 50, status: 'OK' },
+  { type: 'Sow Meal', costPerBag: 20, percent: 18, status: 'Critical' }
+]
+
+-- FinanceModule.categories
+[
+  { name: 'Feed', amount: 1800 },
+  { name: 'Vet', amount: 420 },
+  { name: 'Labour', amount: 500 },
+  { name: 'Utilities', amount: 210 }
+]
+
+-- HealthModule
+schedules: [ { type: 'Vaccine', item: 'Iron Injection (Piglets)', due: 'Tomorrow' }, { type: 'Deworm', item: 'Sows Quarterly', due: 'Next Week' } ]
+outbreaks: [ { level: 'Critical', description: 'Scours in piglets — treated, monitoring' } ]
+
+-- InventoryModule.stock
+[
+  { name: 'Oxytetracycline', category: 'Medicine', qty: 40, status: 'OK' },
+  { name: 'Syringes', category: 'Tools', qty: 12, status: 'Low' },
+  { name: 'Cleaning Detergent', category: 'Supply', qty: 2, status: 'Critical' }
+]
+
+-- NotificationsModule.alerts
+[
+  { text: 'Sow Lucy expected to farrow in 2 days', type: 'warn' },
+  { text: '4 grower pigs ready for sale', type: 'ok' },
+  { text: 'Feed stock below 5 bags', type: 'danger' }
+]
+
+-- EventsModule.events
+[
+  { tag:'sow1', type:'Inseminated/Mated', date:'2024-02-02', semen:'PG001', technician:'Fred Kirwana', returnDate:'2024-02-24', notes:'Had 2 previous unsuccessful attempts. Tried this one more time.' },
+  { tag:'sow1', type:'Inseminated/Mated', date:'2023-11-28', semen:'PG001', technician:'Fred Kirwana', returnDate:'2023-12-20', notes:'' },
+  { tag:'sow2', type:'Weighed', date:'2025-02-10', notes:'Weight 214kg' },
+  { tag:'sow1', type:'Vaccination', date:'2025-12-05', notes:'Booster vaccine (PCV)' },
+  { tag:'sow1', type:'Expected Farrow Check', date:'2025-12-20', notes:'Pre-farrowing check' },
+  { tag:'sow2', type:'Weighing', date:'2025-12-03', notes:'Weigh piglets' },
+  { tag:'boar1', type:'Semen Quality Check', date:'2025-11-30', notes:'Normal motility' },
+  { tag:'boar2', type:'Fertility Assessment', date:'2025-12-10', notes:'Schedule fertility test' },
+  { tag:'litter_sow1_4m', type:'Weighing', date:'2025-12-01', notes:'4m weigh' },
+  { tag:'litter_sow2_3w', type:'Creep feed introduction', date:'2025-11-20', notes:'Start creep feed' }
+]
+
+--- END DUMMY DATA ---

@@ -1,0 +1,308 @@
+// Prisma Schema (Conceptual Draft)
+// Note: This will later move to server/prisma/schema.prisma
+// Some indexes & constraints simplified for clarity.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ USERS & AUTH ==========
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String
+  roleId        String
+  role          Role      @relation(fields: [roleId], references: [id])
+  notifications Notification[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Role {
+  id          String  @id @default(cuid())
+  name        String  @unique // Admin, Manager, Worker, Vet
+  permissions String[] // e.g. ["animals.read","finance.write"]
+  users       User[]
+}
+
+// ============ ANIMALS ============
+model Sow {
+  id            String          @id @default(cuid())
+  tagId         String?         @unique
+  name          String?         
+  breed         String?         
+  dateOfBirth   DateTime?       
+  weightRecords WeightRecord[]
+  breedingEvents BreedingEvent[]
+  litters       Litter[]
+  healthRecords HealthRecord[]
+  notes         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model Boar {
+  id            String          @id @default(cuid())
+  tagId         String?         @unique
+  name          String?         
+  breed         String?         
+  dateOfBirth   DateTime?       
+  useCount      Int             @default(0)
+  fertilityRate Float?          // success ratio
+  weightRecords WeightRecord[]
+  breedingEvents BreedingEvent[]
+  healthRecords HealthRecord[]
+  semenNotes    String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model Litter {
+  id              String        @id @default(cuid())
+  sowId           String
+  sow             Sow           @relation(fields: [sowId], references: [id])
+  farrowDate      DateTime?
+  liveBorn        Int?          
+  deadBorn        Int?          
+  piglets         Piglet[]
+  breedingEventId String?       // link to farrow event if needed
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model Piglet {
+  id            String        @id @default(cuid())
+  litterId      String
+  litter        Litter        @relation(fields: [litterId], references: [id])
+  status        PigletStatus  @default(ALIVE)
+  salePrice     Decimal?      @db.Decimal(10,2)
+  saleDate      DateTime?
+  costAllocated Decimal?      @db.Decimal(10,2)
+  weightRecords WeightRecord[]
+  healthRecords HealthRecord[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+enum PigletStatus { ALIVE SOLD DEAD }
+
+model WeightRecord {
+  id         String     @id @default(cuid())
+  sowId      String?    
+  sow        Sow?       @relation(fields: [sowId], references: [id])
+  boarId     String?    
+  boar       Boar?      @relation(fields: [boarId], references: [id])
+  pigletId   String?    
+  piglet     Piglet?    @relation(fields: [pigletId], references: [id])
+  weightKg   Float
+  recordedAt DateTime   @default(now())
+  source     String?    // manual, image-estimate, RFID
+}
+
+// ============ BREEDING ============
+model BreedingEvent {
+  id            String        @id @default(cuid())
+  sowId         String
+  sow           Sow           @relation(fields: [sowId], references: [id])
+  boarId        String?       
+  boar          Boar?         @relation(fields: [boarId], references: [id])
+  eventType     BreedingEventType
+  servedDate    DateTime?     // for SERVE
+  expectedFarrow DateTime?    // predicted +115d
+  actualFarrow  DateTime?     // actual
+  weaningDate   DateTime?     // predicted
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+enum BreedingEventType { HEAT SERVE FARROW WEAN }
+
+// ============ FEED ============
+model FeedType {
+  id            String     @id @default(cuid())
+  name          String     @unique
+  category      FeedCategory
+  costPerUnit   Decimal    @db.Decimal(10,2) // cost per bag or kg
+  unit          String     // bag/kg
+  inventory     FeedInventory?
+  usageLogs     FeedUsageLog[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+enum FeedCategory { STARTER GROWER FINISHER SOW }
+
+model FeedInventory {
+  id          String   @id @default(cuid())
+  feedTypeId  String   @unique
+  feedType    FeedType @relation(fields: [feedTypeId], references: [id])
+  quantity    Float    @default(0) // current on hand
+  lowThreshold Float?  // alert threshold
+  movements   FeedInventoryMovement[]
+  updatedAt   DateTime @updatedAt
+}
+
+model FeedInventoryMovement {
+  id            String     @id @default(cuid())
+  inventoryId   String
+  inventory     FeedInventory @relation(fields: [inventoryId], references: [id])
+  delta         Float      // positive (purchase) / negative (usage)
+  reason        String?
+  createdAt     DateTime   @default(now())
+}
+
+model FeedUsageLog {
+  id          String     @id @default(cuid())
+  feedTypeId  String
+  feedType    FeedType   @relation(fields: [feedTypeId], references: [id])
+  groupType   FeedGroupType // LITTER / PIGLET_BATCH / SOW_GROUP
+  groupRefId  String?    // references a group entity ID
+  amountUsed  Float
+  recordedAt  DateTime   @default(now())
+}
+
+enum FeedGroupType { LITTER PIGLET_BATCH SOW_GROUP }
+
+// ============ FINANCE ============
+model CostCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique // FEED, VET, LABOUR, HOUSING, UTILITIES, TRANSPORT
+  costs       Cost[]
+}
+
+model Cost {
+  id            String     @id @default(cuid())
+  categoryId    String
+  category      CostCategory @relation(fields: [categoryId], references: [id])
+  amount        Decimal    @db.Decimal(10,2)
+  description   String?
+  occurredAt    DateTime   @default(now())
+  createdAt     DateTime   @default(now())
+}
+
+model Sale {
+  id           String     @id @default(cuid())
+  objectType   SaleObjectType
+  refId        String?    // piglet id or batch id
+  price        Decimal    @db.Decimal(10,2)
+  quantity     Int        @default(1)
+  occurredAt   DateTime   @default(now())
+  createdAt    DateTime   @default(now())
+}
+
+enum SaleObjectType { PIGLET PORK MANURE }
+
+// ============ HEALTH ============
+model HealthRecord {
+  id          String     @id @default(cuid())
+  sowId       String?    
+  sow         Sow?       @relation(fields: [sowId], references: [id])
+  boarId      String?
+  boar        Boar?      @relation(fields: [boarId], references: [id])
+  pigletId    String?    
+  piglet      Piglet?    @relation(fields: [pigletId], references: [id])
+  recordType  HealthRecordType
+  description String?
+  date        DateTime    @default(now())
+}
+
+enum HealthRecordType { VACCINATION DEWORMING MEDICATION INJURY OUTBREAK OTHER }
+
+model VaccinationSchedule {
+  id          String    @id @default(cuid())
+  name        String
+  dueDate     DateTime
+  completed   Boolean   @default(false)
+  notes       String?
+  createdAt   DateTime  @default(now())
+}
+
+// ============ INVENTORY (GENERIC) ============
+model InventoryItem {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  category    InventoryCategory
+  quantity    Float     @default(0)
+  lowThreshold Float?
+  movements   InventoryMovement[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+enum InventoryCategory { MEDICINE TOOL SUPPLY CLEANING }
+
+model InventoryMovement {
+  id          String    @id @default(cuid())
+  itemId      String
+  item        InventoryItem @relation(fields: [itemId], references: [id])
+  delta       Float
+  reason      String?
+  createdAt   DateTime  @default(now())
+}
+
+// ============ NOTIFICATIONS ============
+model Notification {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  title       String
+  message     String
+  channels    NotificationChannel[]
+  status      NotificationStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  sentAt      DateTime?
+}
+
+enum NotificationChannel { EMAIL WEB_PUSH SMS }
+
+enum NotificationStatus { PENDING SENT FAILED }
+
+model AlertRule {
+  id          String     @id @default(cuid())
+  code        String     // e.g. SOW_FARROW_WINDOW, FEED_LOW_STOCK
+  targetRefId String?    // sow id / inventory id etc
+  dueDate     DateTime
+  fulfilled   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+// ============ REPORTING ============
+model ReportCache {
+  id          String    @id @default(cuid())
+  type        ReportType
+  periodStart DateTime?
+  periodEnd   DateTime?
+  data        Json
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+enum ReportType { MONTHLY_FEED MONTHLY_COST PROFIT_LOSS MORTALITY LITTER_PERFORMANCE YEAR_SUMMARY }
+
+// ============ TELEMETRY (FUTURE) ============
+model RfidTag {
+  id        String  @id @default(cuid())
+  code      String  @unique
+  sowId     String?
+  sow       Sow?    @relation(fields: [sowId], references: [id])
+  boarId    String?
+  boar      Boar?   @relation(fields: [boarId], references: [id])
+  pigletId  String?
+  piglet    Piglet? @relation(fields: [pigletId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+// ============ INDEX EXAMPLES ============
+// (Add as migrations refine)
+// @@index([eventType, servedDate])
+// @@index([dueDate]) on AlertRule
+// @@index([occurredAt]) on Cost/Sale

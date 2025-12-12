@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Inventory</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+  <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+  <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+        <a href="./">Dashboard</a>
+        <a href="sows.html">Sows</a>
+        <a href="boars.html">Boars</a>
+        <a href="litters.html">Litters</a>
+        <a href="feed.html">Feed</a>
+        <a href="events.html">Events</a>
+        <a href="health.html">Health</a>
+        <a href="reports.html">Reports</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:22px 0 40px">
+    <div class="section-title"><h2>Stock</h2></div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
+      <div class="card pad">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Oxytetracycline</strong><div class="small">Medicine</div></div>
+          <span class="badge ok">40 units</span>
+        </div>
+      </div>
+      <div class="card pad">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Syringes</strong><div class="small">Tools</div></div>
+          <span class="badge warn">12 units</span>
+        </div>
+      </div>
+      <div class="card pad">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Cleaning Detergent</strong><div class="small">Supply</div></div>
+          <span class="badge danger">2 units</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <script src="assets/app.js"></script>
+  <script>wireActiveNav(); document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Feed</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+  <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+  <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+        <a href="./">Dashboard</a>
+        <a href="sows.html">Sows</a>
+        <a href="boars.html">Boars</a>
+        <a href="litters.html">Litters</a>
+  <a href="feed.html">Feed</a>
+  <a href="events.html">Events</a>
+  <a href="health.html">Health</a>
+        <a href="reports.html">Reports</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:22px 0 40px">
+    <div class="section-title"><h2>Feed Inventory</h2></div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
+      <div class="card pad">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Starter</strong><div class="small">kk remaining: 35</div></div>
+          <span class="badge warn">Low</span>
+        </div>
+        <div style="height:12px"></div>
+        <div class="progress"><div class="bar" style="width:35%"></div></div>
+      </div>
+      <div class="card pad">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Grower</strong><div class="small">kk remaining: 65</div></div>
+          <span class="badge ok">OK</span>
+        </div>
+        <div style="height:12px"></div>
+        <div class="progress"><div class="bar" style="width:65%"></div></div>
+      </div>
+      <div class="card pad">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Finisher</strong><div class="small">kk remaining: 50</div></div>
+          <span class="badge ok">OK</span>
+        </div>
+        <div style="height:12px"></div>
+        <div class="progress"><div class="bar" style="width:50%"></div></div>
+      </div>
+      <div class="card pad">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><strong>Sow Meal</strong><div class="small">kk remaining: 18</div></div>
+          <span class="badge danger">Critical</span>
+        </div>
+        <div style="height:12px"></div>
+        <div class="progress"><div class="bar" style="width:18%;background:#ef4444"></div></div>
+      </div>
+    </div>
+
+    <div style="height:22px"></div>
+    <div class="section-title"><h2>Usage & FCR</h2></div>
+    <div class="charts">
+      <div class="card pad chart">Usage (kg) — placeholder</div>
+      <div class="card pad chart">FCR by group — placeholder</div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <script src="assets/app.js"></script>
+  <script>wireActiveNav(); document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

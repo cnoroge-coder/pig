@@ -1,0 +1,19 @@
+/* Converted to plain CSS to avoid Tailwind build warnings */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #0b0b0c; /* dark */
+  color: #e5e7eb;           /* zinc-100-ish */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #444; }

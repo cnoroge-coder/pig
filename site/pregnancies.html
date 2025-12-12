@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Pregnancies</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+      <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+      <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+        <a href="./">Dashboard</a>
+        <a href="pigs.html">Pigs</a>
+        <a href="sows.html">Sows</a>
+        <a href="boars.html">Boars</a>
+        <a href="litters.html">Litters</a>
+        <a href="feed.html">Feed</a>
+        <a href="events.html">Events</a>
+        <a href="health.html">Health</a>
+        <a href="reports.html">Reports</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:22px 0 40px">
+    <div class="section-title">
+      <h2 id="title">Pregnancies</h2>
+      <div style="display:flex;gap:8px;align-items:center"><button id="addPreg" class="btn">＋ Add Pregnancy</button></div>
+    </div>
+    <div id="pregGrid" class="list"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <script src="assets/supa-config.js"></script>
+  <script src="assets/supabase-client.js"></script>
+  <script src="assets/modules.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+  function param(name){ const p = new URLSearchParams(location.search); return p.get(name); }
+  function renderPregnancies(){
+    const root = document.getElementById('pregGrid'); root.innerHTML='';
+    const tag = param('tag');
+    const all = window.Modules.AnimalsModule.breedingRecords || [];
+    const rows = tag? all.filter(r=> r.sowTag===tag || r.sowName===tag) : all;
+    if(rows.length===0){ root.innerHTML = '<div class="small">No pregnancies recorded</div>'; return; }
+    rows.sort((a,b)=> new Date(b.dateServed||b.date||0)- new Date(a.dateServed||a.date||0));
+    rows.forEach(r=>{
+      const it = document.createElement('div'); it.className='card pad';
+      it.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700">${r.sowName||r.sowTag||'Sow'}</div>
+          <div class="small">${r.dateServed||r.expectedFarrowing||''}</div>
+        </div>
+        <div style="height:8px"></div>
+        <div class="small">Boar:</div><div>${r.boarUsed||''}</div>
+        <div class="small">Expected Farrow:</div><div>${r.expectedFarrowing||''}</div>
+        <div class="small">Actual Farrow:</div><div>${r.actualFarrowing||''}</div>
+        <div class="small">Number Born:</div><div>${r.numberBorn||''}</div>
+        <div class="small">Alive:</div><div>${r.alive||''}</div>
+        <div class="small">Dead:</div><div>${r.dead||''}</div>
+        <div style="height:8px"></div>
+        <div class="small">Remarks:</div><div>${r.remarks||''}</div>
+      `;
+      root.append(it);
+    });
+  }
+
+  function showAddPregForm(prefillTag){
+    const root = document.getElementById('pregGrid');
+    const wrap = document.createElement('div'); wrap.className='card pad'; wrap.id='addPregWrap';
+    wrap.innerHTML = `
+      <div style="display:grid;gap:8px">
+        <input id="pg_sowTag" class="input" placeholder="Sow tag" value="${prefillTag||''}" />
+        <input id="pg_dateServed" type="date" class="input" />
+        <input id="pg_boarUsed" class="input" placeholder="Boar used" />
+        <input id="pg_expected" type="date" class="input" placeholder="Expected farrowing" />
+        <input id="pg_actual" type="date" class="input" placeholder="Actual farrowing" />
+        <input id="pg_numberBorn" type="number" class="input" placeholder="Number born" />
+        <input id="pg_alive" type="number" class="input" placeholder="Alive" />
+        <input id="pg_dead" type="number" class="input" placeholder="Dead" />
+        <textarea id="pg_remarks" class="input" rows="3" placeholder="Remarks"></textarea>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button id="pg_cancel" class="btn">Cancel</button>
+          <button id="pg_save" class="btn primary">Save</button>
+        </div>
+      </div>
+    `;
+    root.insertBefore(wrap, root.firstChild);
+    document.getElementById('pg_cancel').addEventListener('click', ()=> wrap.remove());
+    document.getElementById('pg_save').addEventListener('click', ()=>{
+      const rec = { sowTag: document.getElementById('pg_sowTag').value.trim(), sowName:'', dateServed: document.getElementById('pg_dateServed').value, boarUsed: document.getElementById('pg_boarUsed').value, expectedFarrowing: document.getElementById('pg_expected').value, actualFarrowing: document.getElementById('pg_actual').value, numberBorn: document.getElementById('pg_numberBorn').value, alive: document.getElementById('pg_alive').value, dead: document.getElementById('pg_dead').value, remarks: document.getElementById('pg_remarks').value };
+      window.Modules.AnimalsModule.addBreedingRecord(rec); wrap.remove(); renderPregnancies();
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{ renderPregnancies(); document.getElementById('year').textContent = new Date().getFullYear(); wireActiveNav && wireActiveNav(); const tag = param('tag'); const btn = document.getElementById('addPreg'); btn && btn.addEventListener('click', ()=> showAddPregForm(tag||'')); });
+  </script>
+</body>
+</html>

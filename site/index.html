@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Dashboard</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+  <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+  <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+  <a href="./">Dashboard</a>
+  <a href="pigs.html">Pigs</a>
+  <a href="sows.html">Sows</a>
+  <a href="boars.html">Boars</a>
+        <a href="litters.html">Litters</a>
+  <a href="feed.html">Feed</a>
+  <a href="events.html">Events</a>
+  <a href="health.html">Health</a>
+        <a href="reports.html">Reports</a>
+        <a href="add-pig.html">Add Pig</a>
+      </nav>
+      <button id="themeToggle" class="btn" style="margin-left:8px">Toggle Theme</button>
+    </div>
+  </header>
+
+  <main class="container" style="padding:22px 0 40px">
+    <section class="hero card">
+      <img src="/pics/Pig.jpeg" alt="farm"/>
+      <div class="overlay">
+        <div>
+          <h1>Command Center</h1>
+          <p class="small">Key metrics, alerts and trends at a glance</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <h2>Key Metrics</h2>
+        <span class="badge ok"><span class="dot" style="background:#22c55e"></span> Healthy</span>
+      </div>
+      <div id="tiles" class="grid tiles"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-title"><h2>Alerts</h2></div>
+      <div id="alerts" class="list"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-title"><h2>Charts</h2></div>
+      <div class="charts">
+        <div class="card pad chart">Feed Usage vs Growth (placeholder)</div>
+        <div class="card pad chart">Cost vs Sales (placeholder)</div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <!-- Supabase config (optional) and client bootstrap. Edit supa-config.js to set your project URL and anon key for local testing. -->
+  <script src="assets/supa-config.js"></script>
+  <script src="assets/supabase-client.js"></script>
+  <script src="assets/modules.js"></script>
+  <script src="assets/app.js"></script>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

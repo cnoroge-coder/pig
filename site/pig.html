@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Pig Detail</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+  <style>
+    /* Ensure detail panes flow vertically and have spacing */
+    .pane{display:block;margin-bottom:16px}
+    /* JS will toggle display on these panes; give them block layout by default */
+    #upcomingPane, #eventsPane, #pregPane{display:none}
+    /* sub-sections inside the upcoming composite page */
+    .pane-section{margin-bottom:12px}
+    /* make active tab visually distinct */
+    .btn.active{background:var(--brand);border-color:var(--brand-700);color:#fff}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+  <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+  <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+        <a href="./">Dashboard</a>
+        <a href="pigs.html">Pigs</a>
+        <a href="sows.html">Sows</a>
+        <a href="boars.html">Boars</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:18px 0 60px">
+    <div class="section-title" style="align-items:center">
+      <h2 id="title">Pig Details</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="showAllEventsBtn" class="btn">Events</button>
+        <button id="tabPreg" class="btn">Pregnancies</button>
+        <a id="editBtn" class="btn">Edit</a>
+      </div>
+    </div>
+
+    <div id="detailsPane" class="pane">
+      <div class="card pad" id="detailsCard">
+        <div id="detailContent"></div>
+      </div>
+    </div>
+
+    <div id="upcomingPane" class="pane" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0">
+        <h3 style="margin:0">Overview</h3>
+        <div class="small" style="opacity:0.8">Summary of upcoming events & pregnancy</div>
+      </div>
+
+      <div id="sowDetailsSection" class="pane-section card pad" style="margin-bottom:12px">
+        <h4 style="margin:0 0 8px 0">Details</h4>
+        <div id="detailContentPreview"></div>
+      </div>
+
+      <div id="sowEventsSection" class="pane-section card pad" style="margin-bottom:12px">
+        <h4 style="margin:0 0 8px 0">Upcoming Events</h4>
+        <div id="upcomingEventsList" class="list"></div>
+      </div>
+
+      <div id="sowPregSection" class="pane-section card pad" style="margin-bottom:12px">
+        <h4 style="margin:0 0 8px 0">Pregnancy</h4>
+        <div id="upcomingPregnancyCard"></div>
+        <div id="upcomingPregList" class="list" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+    <div id="eventsPane" class="pane" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0">
+        <h3 style="margin:0">Events</h3>
+        <button id="addEventBtn" class="btn">＋ Add event</button>
+      </div>
+      <div id="eventsList" class="list"></div>
+    </div>
+
+    <div id="pregPane" class="pane" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0">
+        <h3 style="margin:0">Pregnancies</h3>
+        <button id="addPregBtn" class="btn">＋ Add pregnancy</button>
+      </div>
+      <div id="pregList" class="list"></div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <script src="assets/supa-config.js"></script>
+  <script src="assets/supabase-client.js"></script>
+  <script src="assets/modules.js"></script>
+  <script src="assets/app.js"></script>
+  <script src="assets/pig-detail.js"></script>
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+</body>
+</html>

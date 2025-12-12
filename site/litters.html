@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Litters</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+  <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+  <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+        <a href="./">Dashboard</a>
+        <a href="sows.html">Sows</a>
+        <a href="boars.html">Boars</a>
+        <a href="litters.html">Litters</a>
+  <a href="feed.html">Feed</a>
+  <a href="events.html">Events</a>
+  <a href="health.html">Health</a>
+        <a href="reports.html">Reports</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:22px 0 40px">
+    <div class="section-title"><h2>Litters</h2></div>
+    <div class="tr head">
+      <div>Sow</div><div>Live born</div><div>Dead</div><div>Status</div>
+    </div>
+    <div id="litters" class="grid" style="gap:10px"></div>
+
+    <div style="height:24px"></div>
+    <!-- Breeding/serving records intentionally removed from this page. Click a litter to view its piglet monitoring (4m / 3w) -->
+    <div id="litterDetails" style="margin-top:18px"></div>
+
+  <!-- Piglet monitoring moved to individual sow/pig detail pages -->
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <script src="assets/supa-config.js"></script>
+  <script src="assets/supabase-client.js"></script>
+  <script src="assets/modules.js"></script>
+  <script src="assets/app.js"></script>
+  <script>
+  // showLitterDetails: navigate to dedicated litter page or render inline fallback
+  function showLitterDetails(l){
+    try{
+      if(l && l.id){
+        // prefer dedicated page for full details
+        window.location.href = `litter.html?id=${encodeURIComponent(l.id)}`;
+        return;
+      }
+    }catch(e){ /* ignore and fallback to inline */ }
+    const container = document.getElementById('litterDetails');
+    if(!container) return;
+    if(!l) { container.innerHTML = '<div class="card small">No litter selected</div>'; return; }
+    container.innerHTML = `
+      <div class="card">
+        <div class="small">Sow</div>
+        <div style="font-weight:700">${l.sowTag||'Unknown'}</div>
+        <div class="small">Born</div>
+        <div>${l.bornDate||''}</div>
+        <div class="small">Piglets</div>
+        <div>${(l.piglets||[]).length}</div>
+      </div>
+    `;
+  }
+
+  function daysBetween(dateStr){ if(!dateStr) return null; const d=new Date(dateStr); const now=new Date(); return Math.floor((now - d)/(1000*60*60*24)); }
+
+  
+
+  function renderLitters(){
+    const root = document.getElementById('litters'); root.innerHTML='';
+    const LITTERS = window.Modules.AnimalsModule.litters || [];
+    LITTERS.forEach(l=>{
+      const row = document.createElement('div'); row.className='tr';
+      row.style.cursor = 'pointer';
+      row.innerHTML = `
+        <div>${l.sowTag}</div>
+        <div class="kpi"><span class="dot" style="background:#22c55e"></span> ${l.piglets? l.piglets.length:0}</div>
+        <div class="kpi"><span class="dot" style="background:#ef4444"></span> 0</div>
+        <div><span class="badge">${l.status||'Nursing'}</span></div>
+      `;
+      row.addEventListener('click', ()=> showLitterDetails(l));
+      root.append(row);
+    })
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    renderLitters();
+    wireActiveNav(); document.getElementById('year').textContent = new Date().getFullYear();
+  });
+  </script>
+</body>
+</html>

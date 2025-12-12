@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Pig Farm — Reports</title>
+  <link rel="stylesheet" href="assets/styles.css"/>
+</head>
+<body>
+  <header class="header">
+    <div class="container nav">
+  <button class="back-btn" aria-label="Back" id="backBtn">←</button>
+  <div class="brand"><span class="dot"></span> Pig Farm</div>
+      <button class="menu-btn" id="menuBtn" aria-label="Menu">☰</button>
+      <nav class="nav-links">
+        <a href="./">Dashboard</a>
+        <a href="sows.html">Sows</a>
+        <a href="boars.html">Boars</a>
+        <a href="litters.html">Litters</a>
+  <a href="feed.html">Feed</a>
+  <a href="events.html">Events</a>
+  <a href="health.html">Health</a>
+        <a href="reports.html">Reports</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:22px 0 40px">
+  <div class="section-title" style="align-items:center"><h2>Reports</h2><div style="display:flex;gap:8px;align-items:center"><button id="reportsExportBtn" class="btn">Export</button><button id="reportsExportSowsBtn" class="btn">Export Sows</button></div></div>
+    <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr))">
+      <div class="card pad">
+        <div class="label">Monthly feed usage</div>
+        <div class="small">Download sample PDF/Excel (mock)</div>
+        <div style="height:10px"></div>
+        <button class="btn">Generate (mock)</button>
+      </div>
+      <div class="card pad">
+        <div class="label">Profit/Loss report</div>
+        <div class="small">Monthly summary</div>
+        <div style="height:10px"></div>
+        <button class="btn">Generate (mock)</button>
+      </div>
+      <div class="card pad">
+        <div class="label">Breeding performance</div>
+        <div class="small">By sow</div>
+        <div style="height:10px"></div>
+        <button class="btn">Generate (mock)</button>
+      </div>
+    </div>
+    <!-- Export modal (embedded in Reports page so Export UI is always available) -->
+    <div id="pfExportModal" class="card" style="display:none; position:fixed; left:50%; top:50%; transform:translate(-50%,-50%); z-index:99999; min-width:360px; padding:18px;">
+      <h3 style="margin:0 0 8px 0">Export data</h3>
+      <div style="display:grid;gap:8px">
+        <label>Dataset
+          <select id="exportDataset" class="input">
+            <option value="animals">Animals</option>
+            <option value="events">Events</option>
+            <option value="breeding">Breeding</option>
+            <option value="litters">Litters</option>
+          </select>
+        </label>
+        <label>Start date<input id="exportStart" type="date" class="input"/></label>
+        <label>End date<input id="exportEnd" type="date" class="input"/></label>
+        <label>Format<select id="exportFormat" class="input"><option value="csv">CSV</option><option value="xlsx">XLSX (not implemented)</option></select></label>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+          <button id="exportPreviewBtn" class="btn">Preview</button>
+          <button id="exportDownloadBtn" class="btn primary">Download</button>
+          <button id="exportCloseBtn" class="btn">Close</button>
+        </div>
+        <div id="exportPreviewArea" style="margin-top:8px;max-height:220px;overflow:auto;font-size:13px;background:#0f0f12;border:1px solid var(--border);padding:8px;border-radius:8px"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container small">© <span id="year"></span> Pig Farm Management</div>
+  </footer>
+
+  <script src="assets/app.js"></script>
+  <script>
+    wireActiveNav();
+    document.getElementById('year').textContent = new Date().getFullYear();
+    // wire the reports page export button to the export modal (global function provided by app.js)
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const b = document.getElementById('reportsExportBtn'); if(b) b.addEventListener('click', ()=>{
+        // prefer the app-level initializer, but open the embedded modal if present
+        try{ if(typeof setupExportUI === 'function') setupExportUI(); }catch(e){}
+        const modal = document.getElementById('pfExportModal');
+        if(modal){
+          // show modal and ensure basic controls close it
+          modal.style.display = 'block';
+          const close = document.getElementById('exportCloseBtn'); if(close) close.onclick = ()=> modal.style.display = 'none';
+          // if app-level handlers were not wired, wire minimal preview/download handlers now
+          const preview = document.getElementById('exportPreviewBtn');
+          const download = document.getElementById('exportDownloadBtn');
+          const previewArea = document.getElementById('exportPreviewArea');
+          if(preview && download){
+            preview.onclick = async ()=>{
+                try{
+                  const ds = document.getElementById('exportDataset').value;
+                  const s = document.getElementById('exportStart').value;
+                  const e = document.getElementById('exportEnd').value;
+                  let rows = null;
+                  if(typeof window.fetchRowsFromSupabase === 'function'){
+                    try{ rows = await window.fetchRowsFromSupabase(ds,s,e); }catch(err){ console.warn('Supabase preview fallback failed', err); }
+                  }
+                  if(!rows || rows.length===0){
+                    if(typeof getExportRows === 'function') rows = getExportRows(ds,s,e);
+                    else rows = ((window.Modules && (window.Modules[ds]||[])) || []);
+                  }
+                  if(!rows || rows.length===0){ previewArea.textContent = 'No rows matched that selection.'; return; }
+                  previewArea.textContent = rows.slice(0,10).map(r=>JSON.stringify(r)).join('\n');
+                }catch(err){ previewArea.textContent = 'Preview failed: '+(err && err.message? err.message : String(err)); }
+              };
+            download.onclick = async ()=>{
+              try{
+                const ds = document.getElementById('exportDataset').value;
+                const s = document.getElementById('exportStart').value;
+                const e = document.getElementById('exportEnd').value;
+                let rows = null;
+                if(typeof window.fetchRowsFromSupabase === 'function'){
+                  try{ rows = await window.fetchRowsFromSupabase(ds,s,e); }catch(err){ console.warn('Supabase download fallback failed', err); }
+                }
+                if(!rows || rows.length===0){
+                  if(typeof getExportRows === 'function') rows = getExportRows(ds,s,e);
+                  else rows = (window.Modules && window.Modules[ds]) || [];
+                }
+                if(!rows || rows.length===0){ alert('No rows found for that selection'); return; }
+                const csv = (window.generateCSVFromArray) ? window.generateCSVFromArray(rows) : (rows.length? Object.keys(rows[0]).join(',') + '\n' + rows.map(r=>Object.values(r).join(',')).join('\n') : '');
+                const blob = new Blob([csv], {type:'text/csv'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = ds + '.csv'; a.click(); URL.revokeObjectURL(url);
+              }catch(e){ alert('Download failed: '+(e && e.message? e.message : String(e))) }
+            };
+          }
+          return;
+        }
+        if(window.openExportModal) return window.openExportModal();
+        alert('Export UI not ready yet');
+      });
+      const sb = document.getElementById('reportsExportSowsBtn'); if(sb) sb.addEventListener('click', async ()=>{
+        // try to use app-level exportSows if available
+        try{ if(typeof exportSows === 'function') return exportSows(); }catch(e){}
+        // fallback: call exposed window.fetchRowsFromSupabase or getExportRows then download
+        try{
+          const s = document.getElementById('exportStart')?.value; const e = document.getElementById('exportEnd')?.value;
+          let rows = null;
+          if(typeof window.fetchRowsFromSupabase === 'function'){
+            try{ rows = await window.fetchRowsFromSupabase('animals', s, e); }catch(err){ rows = null; }
+          }
+          if(!rows || rows.length===0){ rows = (typeof getExportRows === 'function') ? getExportRows('animals', s, e) : []; }
+          // filter for sows (heuristic)
+          rows = rows.filter(r=> (r.type && String(r.type).toLowerCase().includes('sow')) || (r.role && String(r.role).toLowerCase().includes('sow')) || r.is_sow || r.isSow || (r.sex && String(r.sex).toLowerCase().startsWith('f')) );
+          if(!rows || rows.length===0){ alert('No sow rows found for that selection'); return; }
+          const keys = Array.from(rows.reduce((set,r)=>{ Object.keys(r||{}).forEach(k=>set.add(k)); return set; }, new Set()));
+          const esc = v => '"'+ String(v===null||v===undefined?'':v).replace(/"/g,'""') +'"';
+          const lines = [keys.map(esc).join(',')];
+          rows.forEach(r=> lines.push(keys.map(k=> esc(r[k])).join(',')));
+          const csv = lines.join('\n');
+          const blob = new Blob([csv], {type:'text/csv'});
+          const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `pigfarm_export_sows_${new Date().toISOString().slice(0,10)}.csv`; a.click(); URL.revokeObjectURL(url);
+        }catch(err){ alert('Export sows failed: '+ (err && err.message? err.message : String(err))); }
+      });
+    });
+  </script>
+</body>
+</html>
